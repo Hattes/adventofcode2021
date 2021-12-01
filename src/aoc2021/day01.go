@@ -21,6 +21,10 @@ func main() {
     for i := range part1_test_input {
         if (part1(part1_test_input[i]) != part1_test_output[i]) {
             success = false;
+            fmt.Printf("part1 failed with input %s: result %s != expected %s \n"
+                    ,part1_test_input[i],
+                    part1(part1_test_input[i]),
+                    part1_test_output[i]);
             break;
         }
     }
@@ -33,6 +37,10 @@ func main() {
     for i := range part2_test_input {
         if (part2(part2_test_input[i]) != part2_test_output[i]) {
             success = false;
+            fmt.Printf("part2 failed with input %s: result %s != expected %s \n",
+                    part2_test_input[i],
+                    part2(part2_test_input[i]),
+                    part2_test_output[i]);
             break;
         }
     }
