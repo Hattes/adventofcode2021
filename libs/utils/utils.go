@@ -20,7 +20,7 @@ func get_session() (string, error) {
         return "", err
     }
 
-    return string(content), nil;
+    return strings.TrimSpace(string(content)), nil;
 }
 
 func Get_input(year int, day int) (string, error) {
@@ -73,7 +73,7 @@ func Trim_array(strs []string) []string {
 func StrToInt_array(strs []string) ([]int, error) {
     var ints = make([]int, len(strs));
     for i, str := range strs {
-        var d, err = strconv.Atoi(str);
+        var d, err = strconv.Atoi(strings.TrimSpace(str));
         if err != nil {
             return nil, err;
         }
