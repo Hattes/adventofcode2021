@@ -45,8 +45,8 @@ func Get_input(year int, day int) (string, error) {
     req, err := http.NewRequest("GET", url, nil);
     if err != nil {
         fmt.Printf("error = %s \n", err);
-    }   
-    
+    }
+
     // Set cookie
     req.Header.Set("Cookie", fmt.Sprintf("session=%s; count=x", session));
 
