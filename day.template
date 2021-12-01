@@ -27,7 +27,7 @@ func main() {
     fmt.Printf("part1 minitest success: %t! \n", success);
     p1 := part1(input);
     fmt.Printf("part1: %s\n\n", p1);
-    
+
     success = true;
     for i := range part2_test_input {
         if (part2(part2_test_input[i]) != part2_test_output[i]) {
