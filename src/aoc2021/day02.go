@@ -51,7 +51,7 @@ func main() {
 
 const separator string = "\n";
 
-type Submarine struct{ X, Y int }
+type Submarine struct{ X, Y, aim int }
 
 func pre_parse(raw string) (string, string) {
     var result = strings.Split(raw, " ")
@@ -70,7 +70,7 @@ var part1_test_output = []string{
     `150`,
 };
 func part1(input string) string {
-    var sub = Submarine{0,0}
+    var sub = Submarine{0,0,0}
     var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
     for _, input := range inputs {
         var action, number_str = pre_parse(input)
@@ -85,24 +85,31 @@ func part1(input string) string {
         }
     }
 
-    // ...
-
     var result = sub.X * sub.Y
     return strconv.Itoa(result);
 }
 
-var part2_test_input = []string{
-    ``,
-};
+var part2_test_input = part1_test_input 
 var part2_test_output = []string{
-    ``,
+    `900`,
 };
 func part2(input string) string {
-    // var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
-    // var nums, _ = utils.StrToInt_array(inputs);
+    var sub = Submarine{0,0,0}
+    var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
+    for _, input := range inputs {
+        var action, number_str = pre_parse(input)
+        var number, _ = strconv.Atoi(number_str)
+        switch action {
+        case "forward":
+            sub.X += number
+            sub.Y += number * sub.aim
+        case "down":
+            sub.aim += number
+        case "up":
+            sub.aim -= number
+        }
+    }
 
-    // ...
-
-    return "";
-    // return strconv.Itoa(result);
+    var result = sub.X * sub.Y
+    return strconv.Itoa(result);
 }
