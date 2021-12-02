@@ -3,7 +3,7 @@ package main;
 import (
     "aoc/libs/utils"
     "fmt"
-    "strings"
+    //"strings"
     // "strconv"
 );
 
@@ -58,7 +58,7 @@ var part1_test_output = []string{
     ``,
 };
 func part1(input string) string {
-    var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
+    //var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
     // var nums, _ = utils.StrToInt_array(inputs);
 
     // ...
