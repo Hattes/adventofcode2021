@@ -198,7 +198,7 @@ func part1(input string) string {
     var winning_board [][]BingoSquare
     var winning_score int
     for _, number := range numbers {
-        fmt.Printf("number is %d\n", number)
+        //fmt.Printf("number is %d\n", number)
         for i := range boards {
             if mark_and_check_bingo(boards[i], number) {
                 winning_board = boards[i]
@@ -217,18 +217,38 @@ func part1(input string) string {
     return strconv.Itoa(result);
 }
 
-var part2_test_input = []string{
-    ``,
-};
+var part2_test_input = part1_test_input
 var part2_test_output = []string{
-    ``,
+    `1924`,
 };
 func part2(input string) string {
-    // var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
-    // var nums, _ = utils.StrToInt_array(inputs);
+    var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
+    println(inputs[0])
+    var numbers = parse_numbers(inputs[0])
+    println(numbers[0])
+    var boards = parse_bingoboards(inputs[1:])
+    println(print_board(boards[0]))
+    var winning_board [][]BingoSquare
+    var winning_score int
+    var boards_with_bingo = make([]bool, len(boards))
+    for i := range boards_with_bingo {
+        boards_with_bingo[i] = false
+    }
+    for _, number := range numbers {
+        fmt.Printf("number is %d\n", number)
+        for i := range boards {
+            if boards_with_bingo[i] {
+                continue
+            }
+            if mark_and_check_bingo(boards[i], number) {
+                winning_board = boards[i]
+                winning_score = get_unmarked_sum(boards[i]) * number
+                boards_with_bingo[i] = true
+            }
+        }
+    }
+    println(print_board(winning_board))
 
-    // ...
-
-    return "";
-    // return strconv.Itoa(result);
+    var result = winning_score
+    return strconv.Itoa(result);
 }
