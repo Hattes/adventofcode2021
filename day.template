@@ -35,11 +35,12 @@ func main() {
 
     success = true;
     for i := range part2_test_input {
-        if (part2(part2_test_input[i]) != part2_test_output[i]) {
+        var part2_result = part2(part2_test_input[i])
+        if (part2_result != part2_test_output[i]) {
             success = false;
             fmt.Printf("part2 failed with input %s: result %s != expected %s \n",
                     part2_test_input[i],
-                    part2(part2_test_input[i]),
+                    part2_result,
                     part2_test_output[i]);
             break;
         }
