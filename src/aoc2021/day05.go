@@ -49,8 +49,8 @@ func main() {
         }
     }
     fmt.Printf("Part 2 minitest success: %t! \n", success);
-    //p2 := part2(input);
-    //fmt.Printf("Part 2: %s\n", p2);
+    p2 := part2(input);
+    fmt.Printf("Part 2: %s\n", p2);
 }
 
 const separator string = "\n";
@@ -117,39 +117,97 @@ func get_points_for_line_ver_hos(line Line) []Point {
 func part1(input string) string {
     var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
     var lines = get_lines(inputs)
-    println(lines)
-    //fmt.Printf("%v\n", get_points_for_line_ver_hos(lines[0]))
     var point_count_table = make(map[Point]int)
     for _, line := range lines {
         for _, point := range get_points_for_line_ver_hos(line) {
             point_count_table[point]++
         }
     }
-    var overlap_count = 0
+    var overlap_count = get_overlaps(point_count_table)
+    return strconv.Itoa(overlap_count);
+}
+
+var part2_test_input = part1_test_input
+var part2_test_output = []string{
+    `12`,
+};
+
+func get_overlaps(point_count_table map[Point]int) int {
+    overlap_count := 0
     for _, value := range point_count_table {
         if value >= 2 {
             overlap_count++
         }
     }
-    // var nums, _ = utils.StrToInt_array(inputs);
-
-    // ...
-
-    return strconv.Itoa(overlap_count);
+    return overlap_count
 }
 
-var part2_test_input = []string{
-    ``,
-};
-var part2_test_output = []string{
-    ``,
-};
+func get_points_for_line_diag(line Line) []Point {
+    var points = make([]Point, 0)
+    // Handle three cases: either y1 == y2 or x1 == x2 or it's a straight diagonal line
+    if line.x1 == line.x2 {
+        y_min := utils.Min(line.y1, line.y2)
+        y_max := utils.Max(line.y1, line.y2)
+        for i := y_min; i <= y_max; i++ {
+            points = append(points, Point{line.x1, i})
+        }
+    } else if line.y1 == line.y2 {
+        x_min := utils.Min(line.x1, line.x2)
+        x_max := utils.Max(line.x1, line.x2)
+        for i := x_min; i <= x_max; i++ {
+            points = append(points, Point{i, line.y1})
+        }
+    } else {
+        // Assume it's a straight diagonal line
+        if line.y1 < line.y2 && line.x1 < line.x2 {
+            // e.g. (0,0) and (2,2)
+            x := line.x1
+            for y := line.y1; y <= line.y2; y++ {
+                points = append(points, Point{x, y})
+                x++
+            }
+        } else if line.y1 > line.y2 && line.x1 < line.x2 {
+            // e.g. (2,0) and (0,2)
+            x := line.x1
+            for y := line.y1; y >= line.y2; y-- {
+                points = append(points, Point{x, y})
+                x++
+            }
+        } else if line.y1 < line.y2 && line.x1 > line.x2 {
+            // e.g. (0,2) and (2,0)
+            x := line.x1
+            for y := line.y1; y <= line.y2; y++ {
+                points = append(points, Point{x, y})
+                x--
+            }
+        } else if line.y1 > line.y2 && line.x1 > line.x2 {
+            // e.g. (2,2) and (0,0)
+            x := line.x1
+            for y := line.y1; y >= line.y2; y-- {
+                points = append(points, Point{x, y})
+                x--
+            }
+        } else {
+            panic("unknown case!")
+        }
+    }
+    return points
+}
+
+
 func part2(input string) string {
-    // var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
-    // var nums, _ = utils.StrToInt_array(inputs);
+    var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
+    var lines = get_lines(inputs)
+    //for _, line := range lines {
+    //    fmt.Printf("Line %v has points %v\n", line, get_points_for_line_diag(line))
+    //}
+    var point_count_table = make(map[Point]int)
+    for _, line := range lines {
+        for _, point := range get_points_for_line_diag(line) {
+            point_count_table[point]++
+        }
+    }
+    var overlap_count = get_overlaps(point_count_table)
 
-    // ...
-
-    return "";
-    // return strconv.Itoa(result);
+    return strconv.Itoa(overlap_count);
 }
