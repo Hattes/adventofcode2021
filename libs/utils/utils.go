@@ -151,3 +151,11 @@ func Max(a, b int) int {
     }
     return b
 }
+
+func Sum(summables []int) int {
+    total := 0
+    for _, part := range summables {
+        total += part
+    }
+    return total
+}

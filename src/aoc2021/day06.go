@@ -3,8 +3,8 @@ package main;
 import (
     "aoc/libs/utils"
     "fmt"
-    //"strings"
-    // "strconv"
+    "strings"
+     "strconv"
 );
 
 /**
@@ -51,36 +51,75 @@ func main() {
     fmt.Printf("Part 2: %s\n", p2);
 }
 
-const separator string = "\n";
+const separator string = ",";
 
 var part1_test_input = []string{
-    ``,
+    `3,4,3,1,2`,
 };
 var part1_test_output = []string{
-    ``,
+    `5934`,
 };
-func part1(input string) string {
-    //var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
-    // var nums, _ = utils.StrToInt_array(inputs);
 
-    // ...
+func iterate(fish_counts []int, iterations int) ([]int, int, int) {
+    //for i := 0; i < iterations; i++ {
+    //    for _, fish_count := range fish_counts {
+    //        fish_count.countdown--
+    //        if fish_count.countdown == 0 {
 
-    return "";
-    // return strconv.Itoa(result);
+    //        }
+    //    }
+    //}
+    //return fish_counts
+    newborn := 0
+    halfgrown := 0
+    for i := 0; i < iterations; i++ {
+        offset := i % 7
+        temp_newborn := newborn
+        newborn = fish_counts[offset]
+        fish_counts[offset] += halfgrown
+        halfgrown = temp_newborn
+    }
+    return fish_counts, newborn, halfgrown
 }
 
-var part2_test_input = []string{
-    ``,
-};
+func part1(input string) string {
+    var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
+    var nums, _ = utils.StrToInt_array(inputs);
+
+    return part1_helper(nums, 80)
+}
+
+type FishCount struct{countdown,size int}
+
+func part1_helper(nums []int, iterations int) string {
+    fish_counts := make([]int, 9)  // One counter for each start-offset (which input can be regarded as)
+    //fish_counts := make([]FishCount, 9)
+    // Initialization
+    //for i, num := range nums {
+    //    fish_counts[i].countdown = num
+    //    fish_counts[i].countup++
+    //}
+    for _, num := range nums {
+        fish_counts[num]++
+    }
+
+    // Iterations
+    fish_counts, newborn, halfgrown := iterate(fish_counts, iterations)
+
+    result := utils.Sum(fish_counts) + newborn + halfgrown
+    //result := 0
+    //for _, fish_count := range fish_counts {
+    //    result += fish_count.countup
+    //}
+    return strconv.Itoa(result);
+}
+
+var part2_test_input = part1_test_input
 var part2_test_output = []string{
-    ``,
+    `26984457539`,
 };
 func part2(input string) string {
-    // var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
-    // var nums, _ = utils.StrToInt_array(inputs);
-
-    // ...
-
-    return "";
-    // return strconv.Itoa(result);
+    var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
+    var nums, _ = utils.StrToInt_array(inputs);
+    return part1_helper(nums, 256)
 }
