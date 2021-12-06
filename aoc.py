@@ -59,7 +59,7 @@ def test(args):
         cmd = test_all_command
         print(cmd)
         # os.system(cmd)
-        subprocess.run(cmd, shell=True) # works
+        subprocess.run(cmd, shell=True)
     else:
         if args.day == "":
             path = os.path.join(args.dir, year_format.format(year=args.year))
@@ -70,6 +70,7 @@ def test(args):
         testonly_format = test_day_command.format(year_format, day_format)
         cmd = testonly_format.format(year=args.year, day=int(day_padded))
         print(cmd+"\n")
+        os.environ["PROJECT_ROOT"] = os.path.realpath(os.path.dirname(__file__))
         subprocess.run(cmd, shell=True) # works
 
 

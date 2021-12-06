@@ -8,6 +8,7 @@ import (
   "strconv"
   "net/http"
   "io/ioutil"
+  "path/filepath"
 );
 
 const url_format string = "https://adventofcode.com/%d/day/%d/input";
@@ -24,6 +25,21 @@ func get_session() (string, error) {
 }
 
 func Get_input(year int, day int) (string, error) {
+    local_data, err := get_input_from_local_cache(day)
+    if err == nil {
+        return string(local_data), nil
+    }
+    return get_input_from_aoc(year, day)
+}
+
+func get_input_from_local_cache(day int) ([]byte, error) {
+    file_name := fmt.Sprintf("input_%d.txt", day)
+    project_root := os.Getenv("PROJECT_ROOT")  // Set in calling script
+    path := filepath.Join(project_root, "inputs", file_name)
+    return os.ReadFile(path)
+}
+
+func get_input_from_aoc(year int, day int) (string, error) {
     var session, err = get_session();
 
     // Sanity and errors
@@ -59,8 +75,26 @@ func Get_input(year int, day int) (string, error) {
     if err != nil {
         fmt.Printf("error = %s \n", err);
     }
+    cache_input(data, day)
 
     return string(data), nil;
+}
+
+func cache_input(input []byte, day int) error {
+    file_name := fmt.Sprintf("input_%d.txt", day)
+    project_root := os.Getenv("PROJECT_ROOT")  // Set in calling script
+    path := filepath.Join(project_root, "inputs", file_name)
+    return write_file(path, input)
+}
+
+func write_file(path string, input []byte) error {
+    os.MkdirAll(filepath.Dir(path), os.ModePerm)
+    err := os.WriteFile(path, input, 0644)
+    if err != nil {
+        fmt.Printf("error = %s \n", err);
+        return err
+    }
+    return nil
 }
 
 func Trim_array(strs []string) []string {
