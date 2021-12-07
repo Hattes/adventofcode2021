@@ -48,8 +48,8 @@ func main() {
         }
     }
     fmt.Printf("Part 2 minitest success: %t! \n", success);
-    //p2 := part2(input);
-    //fmt.Printf("Part 2: %s\n", p2);
+    p2 := part2(input);
+    fmt.Printf("Part 2: %s\n", p2);
 }
 
 const separator string = ",";
@@ -65,6 +65,15 @@ func sum_with_offset(addends []int, offset int) int {
     sum := 0
     for _, addend := range addends {
         sum += utils.Abs(addend - offset)
+    }
+    return sum
+}
+
+func sum_with_costly_offset(addends []int, offset int) int {
+    sum := 0
+    for _, addend := range addends {
+        steps := utils.Abs(addend - offset)
+        sum += sumUpTo(steps)
     }
     return sum
 }
@@ -85,11 +94,29 @@ func iterate(nums []int, old_best int) int {
     return iterate(nums[len(nums)/2:], old_best)
 }
 
+func sumUpTo(n int) int {
+    return (n*(n+1))/2
+}
+
 func findBest(nums []int) int {
     sort.Ints(nums)
     cand := 4294967295
     for i := nums[0]; i < nums[len(nums)-1]; i++ {
         new_cand := sum_with_offset(nums, i)
+        if new_cand > cand {
+            break
+        } else {
+            cand = new_cand
+        }
+    }
+    return cand
+}
+
+func findBest2(nums []int) int {
+    sort.Ints(nums)
+    cand := 4294967295
+    for i := nums[0]; i < nums[len(nums)-1]; i++ {
+        new_cand := sum_with_costly_offset(nums, i)
         if new_cand > cand {
             break
         } else {
@@ -144,11 +171,9 @@ var part2_test_output = []string{
     `168`,
 };
 func part2(input string) string {
-    // var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
-    // var nums, _ = utils.StrToInt_array(inputs);
+    var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
+    var nums, _ = utils.StrToInt_array(inputs);
 
-    // ...
-
-    return "";
-    // return strconv.Itoa(result);
+    result := findBest2(nums)
+    return strconv.Itoa(result);
 }
