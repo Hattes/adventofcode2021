@@ -281,20 +281,159 @@ func contains(s []Wire, e Wire) bool {
     return false
 }
 
-func findSolution(wireGroups WireGroups) WireSolution {
+func subset(first, second []Wire) bool {
+    set := make(map[Wire]Wire)
+    for _, value := range second {
+        set[value] += 1
+    }
+
+    for _, value := range first {
+        if count, found := set[value]; !found {
+            return false
+        } else if count < 1 {
+            return false
+        } else {
+            set[value] = count - 1
+        }
+    }
+
+    return true
+}
+
+func otherIndexes(index int) (int, int) {
+    if index == 0 {
+        return 1,2
+    } else if index == 1 {
+        return 0,2
+    } else {
+        return 0,1
+    }
+}
+
+func union(a, b []Wire) []Wire{
+      m := make(map[Wire]bool)
+
+      for _, item := range a {
+              m[item] = true
+      }
+
+      for _, item := range b {
+              if _, ok := m[item]; !ok {
+                      a = append(a, item)
+              }
+      }
+      return a
+}
+
+
+func findSolution(wireGroups WireGroups) map[Wire]Segment {
+    allWires := []Wire{a,b,c,d,e,f,g}
     sort.Sort(wireGroups)
     oneGroup := wireGroups[0]
+    fmt.Printf("One is   %v\n", oneGroup)
     sevenGroup := wireGroups[1]
+    fmt.Printf("Seven is %v\n", sevenGroup)
     solutionMap := make(map[Wire]Segment)
-    var solutionHelp WireSolution
+    solutionMapInv := make(map[Segment]Wire)
     for _, wire := range oneGroup {
         if !contains(sevenGroup, wire) {
             // This is the top element
             solutionMap[wire] = Top
+            solutionMapInv[Top] = wire
         }
     }
-    var result WireSolution
-    return result
+    fourGroup := wireGroups[2]
+    fmt.Printf("Four  is %v\n", fourGroup)
+
+    twoThreeFiveGroups := wireGroups[3:6]
+    var twoFiveGroups [][]Wire
+    var threeGroup []Wire
+    for i, cand := range twoThreeFiveGroups {
+        other1, other2 := otherIndexes(i)
+        group1 := twoThreeFiveGroups[other1]
+        group2 := twoThreeFiveGroups[other2]
+        if subset(cand, union(group1, group2)) {
+            // This is the three
+            threeGroup = wireGroups[i + 3]
+            twoFiveGroups = append(twoFiveGroups, group1)
+            twoFiveGroups = append(twoFiveGroups, group2)
+            break
+        }
+    }
+    fmt.Printf("Three is %v\n", threeGroup)
+
+    for _, wire := range allWires {
+        if contains(threeGroup, wire) && contains(fourGroup, wire) && !contains(oneGroup, wire) {
+            solutionMap[wire] = Middle
+            solutionMapInv[Middle] = wire
+            break
+        }
+    }
+    var zeroGroup []Wire
+    var sixCandGroups [][]Wire
+    for _, group := range wireGroups {
+        middleWire := solutionMapInv[Middle]
+        if len(group) == 6 {
+            if !contains(group, middleWire) {
+                zeroGroup = group
+            } else {
+                sixCandGroups = append(sixCandGroups, group)
+            }
+        }
+    }
+    fmt.Printf("Zero is  %v\n", zeroGroup)
+
+    var sixGroup []Wire
+    var nineGroup []Wire
+    if subset(sixCandGroups[0], union(threeGroup, fourGroup)) {
+        sixGroup, nineGroup = sixCandGroups[1], sixCandGroups[0]
+    } else {
+        sixGroup, nineGroup = sixCandGroups[0], sixCandGroups[1]
+    }
+    fmt.Printf("Six is   %v\n", sixGroup)
+    fmt.Printf("Nine is  %v\n", nineGroup)
+    var twoGroup []Wire
+    var fiveGroup []Wire
+    if subset(twoFiveGroups[0], union(threeGroup, sixGroup)) {
+        twoGroup, fiveGroup = twoFiveGroups[0], twoFiveGroups[1]
+    } else {
+        twoGroup, fiveGroup = twoFiveGroups[1], twoFiveGroups[0]
+    }
+    fmt.Printf("Two is   %v\n", twoGroup)
+    fmt.Printf("Five is  %v\n", fiveGroup)
+
+    var eightGroup []Wire
+    for _, group := range wireGroups {
+        if len(group) == 7 {
+            eightGroup = group
+            break
+        }
+    }
+    fmt.Printf("Eight is %v\n", eightGroup)
+
+    for _, wire := range allWires {
+        if !contains(zeroGroup, wire) {
+            solutionMap[wire] = Middle
+        } else if !contains(nineGroup, wire) {
+            solutionMap[wire] = BottomLeft
+        } else if !contains(sixGroup, wire) {
+            solutionMap[wire] = TopRight
+        } else if contains(fiveGroup, wire) && !contains(twoGroup, wire) {
+            solutionMap[wire] = BottomRight
+        } else if contains(sevenGroup, wire) && !contains(oneGroup, wire) {
+            solutionMap[wire] = Top
+        } else if contains(fourGroup, wire) && !contains(oneGroup, wire) {
+            solutionMap[wire] = TopLeft
+        } else if contains(twoGroup, wire) && !contains(oneGroup, wire) {
+            solutionMap[wire] = Bottom
+        } else {
+            fmt.Printf("%v\n", solutionMap)
+            fmt.Printf("current wire %v\n", wire)
+            //panic("Something is wrong!")
+            fmt.Println("Something is wrong!")
+        }
+    }
+    return solutionMap
 }
 
 func findSolution2(wireGroups [][]Wire) WireSolution {
@@ -344,12 +483,63 @@ func findSolution2(wireGroups [][]Wire) WireSolution {
     return solution
 }
 
+var mytestinput = "cf acf bcdf acdfg abcefg abdefg abcdfg acdeg abdfg abcdefg | cf cf cf cf"
+
+func getSegmentFlags(solutionMap map[Wire]Segment, wires []Wire) map[Segment]bool {
+    result := make(map[Segment]bool)
+    for _, wire := range wires {
+        result[solutionMap[wire]] = true
+    }
+    return result
+}
+
+func getNumber(solutionMap map[Wire]Segment, wires []Wire) int {
+    if len(wires) == 2 {
+        return 1
+    } else if len(wires) == 3 {
+        return 7
+    } else if len(wires) == 4 {
+        return 4
+    } else if len(wires) == 7 {
+        return 8
+    } else if len(wires) == 5 {
+        segments := getSegmentFlags(solutionMap, wires)
+        if segments[TopRight] {
+            if segments[BottomLeft] {
+                return 2
+            } else {
+                return 3
+            }
+        } else {
+            return 5
+        }
+    } else {
+        segments := getSegmentFlags(solutionMap, wires)
+        if segments[TopRight] {
+            if segments[Middle] {
+                return 9
+            } else {
+                return 0
+            }
+        } else {
+            return 6
+        }
+    }
+}
+
 func part2(input string) string {
     notes := parse(input)
 
+    total := 0
     for _, note := range notes {
-        findSolution2(note.patterns)
+        solutionMap := findSolution(note.patterns)
+        length := len(note.output)
+        for i, output := range note.output {
+            number := getNumber(solutionMap, output)
+            println(number)
+            total += utils.IntPow(10, length - i - 1) * number
+        }
     }
-    return "";
-    // return strconv.Itoa(result);
+    result := total
+    return strconv.Itoa(result);
 }
