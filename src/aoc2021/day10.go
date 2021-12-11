@@ -5,6 +5,8 @@ import (
     "fmt"
     "strings"
     "strconv"
+    "errors"
+    "sort"
 );
 
 /**
@@ -87,6 +89,11 @@ var scores = map[rune]int{')': 3,
                           '}': 1197,
                           '>': 25137}
 
+var part2Scores = map[rune]int{'(': 1,
+                               '[': 2,
+                               '{': 3,
+                               '<': 4}
+
 func getWrongs(line string) []rune {
     result := make([]rune, 0)
     state := make(stack, 0)
@@ -113,6 +120,31 @@ func getWrongs(line string) []rune {
     return result
 }
 
+func findIncomplete(line string) (stack, error) { // Could have been called 'hasWrong'
+    state := make(stack, 0)
+    for _, char := range line {
+        var expected int32
+        if char == '(' || char == '[' || char == '{' || char == '<' {
+            state = state.Push(char)
+            continue
+        } else if char == ')' {
+            expected = '('
+        } else if char == ']' {
+            expected = '['
+        } else if char == '}' {
+            expected = '{'
+        } else if char == '>' {
+            expected = '<'
+        }
+        var last rune
+        state, last = state.Pop()
+        if last != expected {
+            return state, errors.New("Corrupted")
+        }
+    }
+    return state, nil
+}
+
 func part1(input string) string {
     var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
     result := 0
@@ -126,18 +158,27 @@ func part1(input string) string {
     return strconv.Itoa(result);
 }
 
-var part2_test_input = []string{
-    ``,
-};
+var part2_test_input = part1_test_input
 var part2_test_output = []string{
-    ``,
+    `288957`,
 };
 func part2(input string) string {
-    // var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
-    // var nums, _ = utils.StrToInt_array(inputs);
+    var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
 
-    // ...
-
-    return "";
-    // return strconv.Itoa(result);
+    scores := make([]int, 0)
+    for _, input := range inputs {
+        rest, err := findIncomplete(input)
+        if err == nil {
+            score := 0
+            for i := len(rest) - 1; i >= 0; i-- {
+                char := rest[i]
+                score = score * 5
+                score += part2Scores[char]
+            }
+            scores = append(scores, score)
+        }
+    }
+    sort.Ints(scores)
+    result := scores[len(scores)/2]
+    return strconv.Itoa(result);
 }
