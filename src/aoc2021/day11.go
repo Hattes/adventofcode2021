@@ -47,8 +47,8 @@ func main() {
         }
     }
     fmt.Printf("Part 2 minitest success: %t! \n", success);
-    //p2 := part2(input);
-    //fmt.Printf("Part 2: %s\n", p2);
+    p2 := part2(input);
+    fmt.Printf("Part 2: %s\n", p2);
 }
 
 const separator string = "\n";
@@ -117,69 +117,86 @@ func printOctopodes(octopodes [][]Octopus) {
     println("")
 }
 
-func iterate(octopodes [][]Octopus, iterations int) int {
-    // Run sim, return number of flashes
-    flashes := 0
-    for i := 0; i < iterations; i++ {
-        //printOctopodes(octopodes)
-
-        // Loop through once to tick everything
-        for y := range octopodes {
-            for x := range octopodes[y] {
-                octopus := &(octopodes[y][x])
-                octopus.energy++
-            }
-        }
-
-        oneFlashed := true
-        for oneFlashed {
-            oneFlashed = false
-            for y := range octopodes {
-                for x := range octopodes[y] {
-                    octopus := &(octopodes[y][x])
-                    if octopus.energy > 9 && !octopus.flashed {
-                        octopus.flashed = true
-                        flashes++
-                        tickNeighbors(&octopodes, x, y)
-                        oneFlashed = true
-                    }
-                }
-            }
-        }
-
-        // Reset all flash flags
-        for y := range octopodes {
-            for x := range octopodes[y] {
-                octopus := &(octopodes[y][x])
-                if octopus.flashed {
-                    octopus.flashed = false
-                    octopus.energy = 0
-                }
-            }
-        }
-        //fmt.Printf("Flashes so far: %d\n", flashes)
+func iterateUntilAllFlashed(octopodes [][]Octopus) int {
+    // Return the iteration at which that happened
+    length := 0
+    for i := range octopodes {
+        length += len(octopodes[i])
     }
+    flashes := 0
+    var iterations int
+    for iterations = 0; flashes != length; iterations++ {
+        octopodes, flashes = run(octopodes)
+    }
+    return iterations
+}
+
+func run(octopodes [][]Octopus) ([][]Octopus, int) {
+    // Run once, return number of flashes
+    flashes := 0
     //printOctopodes(octopodes)
-    return flashes
+
+    // Loop through once to tick everything
+    for y := range octopodes {
+        for x := range octopodes[y] {
+            octopus := &(octopodes[y][x])
+            octopus.energy++
+        }
+    }
+
+    oneFlashed := true
+    for oneFlashed {
+        oneFlashed = false
+        for y := range octopodes {
+            for x := range octopodes[y] {
+                octopus := &(octopodes[y][x])
+                if octopus.energy > 9 && !octopus.flashed {
+                    octopus.flashed = true
+                    flashes++
+                    tickNeighbors(&octopodes, x, y)
+                    oneFlashed = true
+                }
+            }
+        }
+    }
+
+    // Reset all flash flags
+    for y := range octopodes {
+        for x := range octopodes[y] {
+            octopus := &(octopodes[y][x])
+            if octopus.flashed {
+                octopus.flashed = false
+                octopus.energy = 0
+            }
+        }
+    }
+    //fmt.Printf("Flashes so far: %d\n", flashes)
+    //printOctopodes(octopodes)
+    return octopodes, flashes
+}
+
+func iterateFor(octopodes [][]Octopus, iterations int) int {
+    // Run sim, return number of flashes
+    totalFlashes := 0
+    for i := 0; i < iterations; i++ {
+        var flashes int
+        octopodes, flashes = run(octopodes)
+        totalFlashes += flashes
+    }
+    return totalFlashes
 }
 func part1(input string) string {
     var rows = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
-    result := iterate(getOctopodes(rows), 100)
+    result := iterateFor(getOctopodes(rows), 100)
     return strconv.Itoa(result);
 }
 
-var part2_test_input = []string{
-    ``,
-};
+var part2_test_input = part1_test_input
 var part2_test_output = []string{
-    ``,
+    `195`,
 };
 func part2(input string) string {
-    // var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
-    // var nums, _ = utils.StrToInt_array(inputs);
-
-    // ...
-
-    return "";
-    // return strconv.Itoa(result);
+    var rows = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
+    result := iterateUntilAllFlashed(getOctopodes(rows))
+    return strconv.Itoa(result);
 }
