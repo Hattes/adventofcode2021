@@ -31,10 +31,8 @@ func main() {
     }
 
     fmt.Printf("Part 1 minitest success: %t! \n", success);
-    if false {
-        p1 := part1(input);
-        fmt.Printf("Part 1: %s\n\n", p1);
-    }
+    p1 := part1(input);
+    fmt.Printf("Part 1: %s\n\n", p1);
 
     success = true;
     for i := range part2_test_input {
@@ -88,37 +86,85 @@ func getOctopodes(rows []string) [][]Octopus {
 type Octopus struct {energy int
                      flashed bool}
 
+func tickNeighbors(octopodes *[][]Octopus, x, y int) {
+    tick(octopodes, x-1, y-1)
+    tick(octopodes, x,   y-1)
+    tick(octopodes, x+1, y-1)
+
+    tick(octopodes, x-1, y)
+    tick(octopodes, x+1, y)
+
+    tick(octopodes, x-1, y+1)
+    tick(octopodes, x,   y+1)
+    tick(octopodes, x+1, y+1)
+}
+
+func tick(octopodes *[][]Octopus, x, y int) {
+    if y >= 0 && y < len(*octopodes) {
+        if x >= 0 && x < len((*octopodes)[y]) {
+            (*octopodes)[y][x].energy++
+        }
+    }
+}
+
+func printOctopodes(octopodes [][]Octopus) {
+    for y := range octopodes {
+        for x := range octopodes[y] {
+            print(octopodes[y][x].energy)
+        }
+        println("")
+    }
+    println("")
+}
+
 func iterate(octopodes [][]Octopus, iterations int) int {
     // Run sim, return number of flashes
     flashes := 0
     for i := 0; i < iterations; i++ {
+        //printOctopodes(octopodes)
+
+        // Loop through once to tick everything
         for y := range octopodes {
             for x := range octopodes[y] {
                 octopus := &(octopodes[y][x])
-                if octopus.energy == 9 {
-                    octopus.flashed = true
-                    flashes++
-                    octopus.energy = 0
-                } else {
-                    octopus.energy++
+                octopus.energy++
+            }
+        }
+
+        oneFlashed := true
+        for oneFlashed {
+            oneFlashed = false
+            for y := range octopodes {
+                for x := range octopodes[y] {
+                    octopus := &(octopodes[y][x])
+                    if octopus.energy > 9 && !octopus.flashed {
+                        octopus.flashed = true
+                        flashes++
+                        tickNeighbors(&octopodes, x, y)
+                        oneFlashed = true
+                    }
                 }
             }
         }
+
         // Reset all flash flags
         for y := range octopodes {
             for x := range octopodes[y] {
                 octopus := &(octopodes[y][x])
-                octopus.flashed = false
+                if octopus.flashed {
+                    octopus.flashed = false
+                    octopus.energy = 0
+                }
             }
         }
+        //fmt.Printf("Flashes so far: %d\n", flashes)
     }
+    //printOctopodes(octopodes)
     return flashes
 }
 func part1(input string) string {
     var rows = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
-    octopodes := getOctopodes(rows)
-    result := iterate(octopodes, 100)
-
+    result := iterate(getOctopodes(rows), 100)
     return strconv.Itoa(result);
 }
 
