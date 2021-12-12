@@ -9,6 +9,7 @@ import (
   "net/http"
   "io/ioutil"
   "path/filepath"
+  "unicode"
 );
 
 const url_format string = "https://adventofcode.com/%d/day/%d/input";
@@ -165,4 +166,13 @@ func Abs(x int) int {
         return -x
     }
     return x
+}
+
+func IsUpper(s string) bool {
+    for _, r := range s {
+        if !unicode.IsUpper(r) && unicode.IsLetter(r) {
+            return false
+        }
+    }
+    return true
 }
