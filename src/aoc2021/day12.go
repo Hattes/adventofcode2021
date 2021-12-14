@@ -47,8 +47,8 @@ func main() {
         }
     }
     fmt.Printf("Part 2 minitest success: %t! \n", success);
-    //p2 := part2(input);
-    //fmt.Printf("Part 2: %s\n", p2);
+    p2 := part2(input);
+    fmt.Printf("Part 2: %s\n", p2);
 }
 
 const separator string = "\n";
@@ -122,8 +122,7 @@ func getPathsHelper(caveMap map[string]Cave,
     visited[id] = true
     for _, caveId := range caveMap[id].adj {
         //fmt.Printf("cave id %s\n", caveId)
-        var canVisitNow bool
-        canVisitNow, usedDouble = canVisit(caveMap[caveId], visited, usedDouble)
+        canVisitNow, usedDoubleNow := canVisit(caveMap[caveId], visited, usedDouble)
         if !canVisitNow {
             continue
         } else {
@@ -134,7 +133,7 @@ func getPathsHelper(caveMap map[string]Cave,
             path = append(path, caveId)
             newPath := make([]string, len(path))
             copy(newPath, path)
-            paths = append(paths, getPathsHelper(caveMap, newVisited, newPath, caveId, usedDouble)...)
+            paths = append(paths, getPathsHelper(caveMap, newVisited, newPath, caveId, usedDoubleNow)...)
         }
     }
     return paths
@@ -161,11 +160,6 @@ func part1(input string) string {
     paths := getPaths(caves)
     //fmt.Printf("%v\n", paths)
     result := len(paths)
-    if result == 10 {
-        for _, path := range paths {
-            fmt.Printf("%v\n", path)
-        }
-    }
     return strconv.Itoa(result);
 }
 
@@ -176,11 +170,7 @@ var part2_test_output = []string{
 
 func printPaths(paths [][]string) {
     for _, path := range paths {
-        for _, id := range path {
-            print(id)
-            print(",")
-        }
-        println()
+        println(strings.Join(path, ","))
     }
 }
 
@@ -188,7 +178,7 @@ func part2(input string) string {
     var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
     caves := getCaves(inputs)
     paths := getPaths2(caves)
-    printPaths(paths)
+    //printPaths(paths)
 
     result := len(paths)
     return strconv.Itoa(result);
