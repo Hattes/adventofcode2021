@@ -153,6 +153,14 @@ func Max(a, b int) int {
     return b
 }
 
+func ArrayMax(ns []int) int {
+    max := 0
+    for _, n := range ns {
+        max = Max(n, max)
+    }
+    return max
+}
+
 func Sum(summables []int) int {
     total := 0
     for _, part := range summables {
