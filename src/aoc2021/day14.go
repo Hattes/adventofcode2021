@@ -47,8 +47,8 @@ func main() {
         }
     }
     fmt.Printf("Part 2 minitest success: %t! \n", success);
-    //p2 := part2(input);
-    //fmt.Printf("Part 2: %s\n", p2);
+    p2 := part2(input);
+    fmt.Printf("Part 2: %s\n", p2);
 }
 
 const separator string = "\n";
@@ -88,7 +88,7 @@ func getRules(rulesRaw []string) map[string]rune {
 
 func runInsertions(template string, rules map[string]rune, iterations int) string {
     current := template
-    for i := 0; i < 10; i++ {
+    for i := 0; i < iterations; i++ {
         var b strings.Builder
         for j := 0; j < len(current) - 1; j++ {
             b.WriteString(string(current[j]))
@@ -146,6 +146,7 @@ func part2(input string) string {
     rules := getRules(rulesRaw)
 
     sequence := runInsertions(template, rules, 40)
+    fmt.Printf("%d\n", len(sequence))
 
     highest, lowest := countElements(sequence)
     result := highest - lowest
