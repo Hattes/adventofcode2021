@@ -32,10 +32,8 @@ func main() {
     }
 
     fmt.Printf("Part 1 minitest success: %t! \n", success);
-    if false {
         p1 := part1(input);
         fmt.Printf("Part 1: %s\n\n", p1);
-    }
 
     success = true;
     for i := range part2_test_input {
@@ -50,8 +48,8 @@ func main() {
         }
     }
     fmt.Printf("Part 2 minitest success: %t! \n", success);
-    //p2 := part2(input);
-    //fmt.Printf("Part 2: %s\n", p2);
+    p2 := part2(input);
+    fmt.Printf("Part 2: %s\n", p2);
 }
 
 const separator string = "\n";
@@ -72,50 +70,88 @@ var part1_test_output = []string{
     `40`,
 };
 
-func getRiskLevels(rows []string) RiskMap {
-    riskLevels := make(RiskMap)
-    for x, row := range rows {
-        riskLevels[x] = make(map[int]*Cell)
-        for y, riskRaw := range strings.Split(row, "") {
+func getRiskLevels(rows []string) [][]int {
+    riskLevels := make([][]int, len(rows))
+    for y, row := range rows {
+        riskLevels[y] = make([]int, len(row))
+        for x, riskRaw := range strings.Split(row, "") {
             risk, _ := strconv.Atoi(riskRaw)
-            riskLevels[x][y] = &Cell{risk, x, y, riskLevels}
+            riskLevels[y][x] = risk
         }
     }
     return riskLevels
 }
 
+func getRiskMap(riskLevels [][]int) RiskMap {
+    riskMap := make(RiskMap)
+    for y, row := range riskLevels {
+        riskMap[y] = make(map[int]*Cell)
+        for x, risk := range row {
+            riskMap[y][x] = &Cell{risk, x, y, riskMap}
+        }
+    }
+    return riskMap
+}
+
 func part1(input string) string {
     var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
     riskLevels := getRiskLevels(inputs)
+    riskMap := getRiskMap(riskLevels)
 
-    // Copied from astar package
-    // t1 and t2 are *Tile objects from inside the world.
-    t1 := riskLevels[0][0]
-    t2 := riskLevels[len(inputs)-1][len(inputs[0])-1]
-    //t2 := riskLevels[1][1]
+    t1 := riskMap[0][0]
+    t2 := riskMap[len(inputs)-1][len(inputs[0])-1]
     _, distance, found := astar.Path(t1, t2)
     if !found {
         println("Could not find path")
+        return ""
     }
-    // path is a slice of Pather objects which you can cast back to *Tile.
 
     return strconv.Itoa(int(distance));
 }
 
-var part2_test_input = []string{
-    ``,
-};
+var part2_test_input = part1_test_input
 var part2_test_output = []string{
-    ``,
+    `315`,
 };
+
+func replicateAndIncrease(riskLevels [][]int, times int) [][]int {
+    extended := make([][]int, 0)
+    for i := 0; i < times+1; i++ {
+        yOffset := i*len(riskLevels)
+        for j := 0; j < times+1; j++ {
+            xOffset := j*len(riskLevels)
+            //fmt.Printf("offsets are %d and %d\n", xOffset, yOffset)
+            for y, row := range riskLevels {
+                yIndex := yOffset + y
+                if yIndex > len(extended) - 1 {
+                    extended = append(extended, make([]int, len(riskLevels[y])*(times+1)))
+                }
+                for x, risk := range row {
+                    elevated := ((risk + yOffset + xOffset - 1) % 9) + 1
+                    extended[yOffset+y][xOffset+x] = elevated
+                }
+            }
+        }
+    }
+    return extended
+}
+
 func part2(input string) string {
-    // var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
-    // var nums, _ = utils.StrToInt_array(inputs);
+    var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
+    riskLevels := getRiskLevels(inputs)
+    riskLevels = replicateAndIncrease(riskLevels, 4)
+    //fmt.Printf("%v\n", riskLevels)
+    riskMap := getRiskMap(riskLevels)
 
-    // ...
+    t1 := riskMap[0][0]
+    t2 := riskMap[len(riskLevels)-1][len(riskLevels[0])-1]
+    _, distance, found := astar.Path(t1, t2)
+    if !found {
+        println("Could not find path")
+        return ""
+    }
 
-    return "";
-    // return strconv.Itoa(result);
+    return strconv.Itoa(int(distance));
 }
 
 type RiskMap map[int]map[int]*Cell
@@ -124,10 +160,10 @@ func (c *Cell) String() string {
     return fmt.Sprintf("cell risk:%d x:%d y:%d\n", c.risk, c.x, c.y)
 }
 func (rm RiskMap) Cell(x, y int) *Cell {
-    if rm[x] == nil {
+    if rm[y] == nil {
         return nil
     }
-    return rm[x][y]
+    return rm[y][x]
 }
 
 func (c *Cell) PathNeighbors() []astar.Pather {
