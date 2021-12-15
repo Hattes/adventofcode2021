@@ -31,8 +31,10 @@ func main() {
     }
 
     fmt.Printf("Part 1 minitest success: %t! \n", success);
-    p1 := part1(input);
-    fmt.Printf("Part 1: %s\n\n", p1);
+    if false {
+        p1 := part1(input);
+        fmt.Printf("Part 1: %s\n\n", p1);
+    }
 
     success = true;
     for i := range part2_test_input {
@@ -47,8 +49,8 @@ func main() {
         }
     }
     fmt.Printf("Part 2 minitest success: %t! \n", success);
-    p2 := part2(input);
-    fmt.Printf("Part 2: %s\n", p2);
+    //p2 := part2(input);
+    //fmt.Printf("Part 2: %s\n", p2);
 }
 
 const separator string = "\n";
