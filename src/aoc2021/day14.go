@@ -47,8 +47,8 @@ func main() {
         }
     }
     fmt.Printf("Part 2 minitest success: %t! \n", success);
-    p2 := part2(input);
-    fmt.Printf("Part 2: %s\n", p2);
+    //p2 := part2(input);
+    //fmt.Printf("Part 2: %s\n", p2);
 }
 
 const separator string = "\n";
@@ -90,7 +90,8 @@ func runInsertions(template string, rules map[string]rune, iterations int) strin
     current := template
     for i := 0; i < iterations; i++ {
         var b strings.Builder
-        for j := 0; j < len(current) - 1; j++ {
+        curLength := len(current) - 1
+        for j := 0; j < curLength; j++ {
             b.WriteString(string(current[j]))
             pair := string(current[j]) + string(current[j+1])
             res, success := rules[pair]
@@ -98,10 +99,48 @@ func runInsertions(template string, rules map[string]rune, iterations int) strin
                 b.WriteString(string(res))
             }
         }
-        b.WriteString(string(current[len(current)-1]))
+        b.WriteString(string(current[curLength]))
         current = b.String()
     }
     return current
+}
+
+func runAndCountDepthFirst2(template string, rules map[string]rune, iterations int, counts map[rune]int) (int, int) {
+    counts := make(map[rune]int)
+    pat := template[0:2]
+    for true {
+        for i := 0; i < iterations; i++ {
+            res, ok := rules[pat]
+            if ok {
+                pat = string([]rune{pat[0], res})
+            }
+        }
+    }
+    var highest, lowest int
+    for _, value := range counts {
+        highest = utils.Max(highest, value)
+        lowest = utils.Min(lowest, value)
+    }
+    return highest, lowest
+}
+
+func runAndCountDepthFirst(template string, rules map[string]rune, iterations int) (int, int) {
+    counts := make(map[rune]int)
+    pat := template[0:2]
+    for true {
+        for i := 0; i < iterations; i++ {
+            res, ok := rules[pat]
+            if ok {
+                pat = string([]rune{pat[0], res})
+            }
+        }
+    }
+    var highest, lowest int
+    for _, value := range counts {
+        highest = utils.Max(highest, value)
+        lowest = utils.Min(lowest, value)
+    }
+    return highest, lowest
 }
 
 func countElements(polymer string) (int, int) {
@@ -145,10 +184,8 @@ func part2(input string) string {
 
     rules := getRules(rulesRaw)
 
-    sequence := runInsertions(template, rules, 40)
-    fmt.Printf("%d\n", len(sequence))
+    highest, lowest := runAndCountDepthFirst(template, rules, 23)
 
-    highest, lowest := countElements(sequence)
     result := highest - lowest
     return strconv.Itoa(result);
 }
