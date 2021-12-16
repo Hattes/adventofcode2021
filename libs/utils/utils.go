@@ -161,6 +161,14 @@ func ArrayMax(ns []int) int {
     return max
 }
 
+func ArrayMin(ns []int) int {
+    min := MaxInt
+    for _, n := range ns {
+        min = Min(n, min)
+    }
+    return min
+}
+
 func Sum(summables []int) int {
     total := 0
     for _, part := range summables {

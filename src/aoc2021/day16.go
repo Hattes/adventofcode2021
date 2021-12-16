@@ -31,8 +31,10 @@ func main() {
     }
 
     fmt.Printf("Part 1 minitest success: %t! \n", success);
+    if true {
         p1 := part1(input);
         fmt.Printf("Part 1: %s\n\n", p1);
+    }
 
     success = true;
     for i := range part2_test_input {
@@ -47,8 +49,8 @@ func main() {
         }
     }
     fmt.Printf("Part 2 minitest success: %t! \n", success);
-    //p2 := part2(input);
-    //fmt.Printf("Part 2: %s\n", p2);
+    p2 := part2(input);
+    fmt.Printf("Part 2: %s\n", p2);
 }
 
 const separator string = "";
@@ -115,12 +117,92 @@ func getLiteral(bits []int) (int, []int) {
         zeroIfLast, bits = take(bits, 1)
         litNibble := bits[:4]
         bits = bits[4:]
+        litBits = append(litBits, litNibble...)
         if zeroIfLast == 0 {
             break
         }
-        litBits = append(litBits, litNibble...)
     }
     return read(litBits), bits
+}
+
+func getValue(bits []int) (int, []int) {
+    if len(bits) < 6 {
+        return 0, []int{}
+    }
+
+    // Get header
+    _, bits = take(bits, 3) // Get rid of version
+    var typeID int
+    typeID, bits = take(bits, 3)
+
+    if typeID == 4 {
+        var literal int
+        literal, bits = getLiteral(bits)
+        return literal, bits
+    } else {
+        var lengthTypeID int
+        lengthTypeID, bits = take(bits, 1)
+        values := make([]int, 0)
+        if lengthTypeID == 0 {
+            var length int
+            length, bits = take(bits, 15)
+            innerBits := bits[:length]
+            bits = bits[length:]
+            for true {
+                var value int
+                value, innerBits = getValue(innerBits)
+                values = append(values, value)
+                if len(innerBits) == 0 {
+                    break
+                }
+            }
+        } else {
+            var number int
+            number, bits = take(bits, 11)
+            for i := 0; i < number; i++ {
+                var value int
+                value, bits = getValue(bits)
+                values = append(values, value)
+            }
+        }
+        switch typeID {
+        case 0:
+            return utils.Sum(values), bits
+        case 1:
+            return prod(values), bits
+        case 2:
+            return utils.ArrayMin(values), bits
+        case 3:
+            return utils.ArrayMax(values), bits
+        case 5:
+            if values[0] > values[1] {
+                return 1, bits
+            } else {
+                return 0, bits
+            }
+        case 6:
+            if values[0] < values[1] {
+                return 1, bits
+            } else {
+                return 0, bits
+            }
+        case 7:
+            if values[0] == values[1] {
+                return 1, bits
+            } else {
+                return 0, bits
+            }
+        }
+        return 0, bits
+    }
+}
+
+func prod(nums []int) int {
+    result := 1
+    for _, num := range nums {
+        result *= num
+    }
+    return result
 }
 
 func countVersions(bits []int) (int, []int) {
@@ -185,17 +267,33 @@ func part1(input string) string {
 }
 
 var part2_test_input = []string{
-    ``,
-};
+    `D2FE28`,
+    `C200B40A82`,
+    `04005AC33890`,
+    `880086C3E88112`,
+    `CE00C43D881120`,
+    `D8005AC2A8F0`,
+    `F600BC2D8F`,
+    `9C005AC2F8F0`,
+    `9C0141080250320F1802104A08`,
+}
 var part2_test_output = []string{
-    ``,
+    `2021`,
+    `3`,
+    `54`,
+    `7`,
+    `9`,
+    `1`,
+    `0`,
+    `0`,
+    `1`,
 };
 func part2(input string) string {
-    // var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
-    // var nums, _ = utils.StrToInt_array(inputs);
+    var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
+    var nibbles = parseHexs(inputs);
+    bits := nibblesToBits(nibbles)
 
-    // ...
+    value, _ := getValue(bits)
 
-    return "";
-    // return strconv.Itoa(result);
+    return strconv.Itoa(value);
 }
