@@ -1,7 +1,7 @@
 package main;
 
 import (
-    //"aoc/libs/utils"
+    "aoc/libs/utils"
     "fmt"
     //"strings"
     "strconv"
@@ -29,17 +29,15 @@ func main() {
     }
     input := Target{124, 174, -123, -85}
     fmt.Printf("Part 1 minitest success: %t! \n", success);
-    if false {
         p1 := part1(input)
         fmt.Printf("Part 1: %s\n\n", p1);
-    }
 
     success = true;
     for i := range part2_test_input {
         var part2_result = part2(part2_test_input[i])
         if (part2_result != part2_test_output[i]) {
             success = false;
-            fmt.Printf("Part 2 failed with input %s: result %s != expected %s \n",
+            fmt.Printf("Part 2 failed with input %v: result %s != expected %s \n",
                     part2_test_input[i],
                     part2_result,
                     part2_test_output[i]);
@@ -105,6 +103,17 @@ func (p *Probe) wayOff(target Target) bool {
     return false
 }
 
+func maxVY(target Target) int {
+    // We want to just exactly hit the target, so there should be only one step
+    // between hitting the y=0 plane and hitting the target
+    // then we should test this with the given vx and see whether we have time
+    // to actually reverse our y speed
+    if target.yMin > 0 {
+        return target.yMin
+    }
+    return utils.Abs(target.yMin) - 1
+}
+
 func (p *Probe) stepX() {
     p.x += p.vx
     if p.vx > 0 {
@@ -147,24 +156,35 @@ func getVx(target Target) int {
 
 func findVelocityForHighest(target Target) (int, int) {
     vx := getVx(target)
-    return vx, 1
+    vy := maxVY(target)
+    fmt.Printf("vx=%d vy=%d\n", vx, vy)
+    return vx, vy
 }
 
 func part1(target Target) string {
     //var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
     // var nums, _ = utils.StrToInt_array(inputs);
     vx, vy := findVelocityForHighest(target)
-    result := vx * vy
+    p := Probe{0,0,vx,vy}
+    maxY := 0
+    for true {
+        p.step()
+        maxY = utils.Max(maxY, p.y)
+        if p.hit(target) {
+            break
+        }
+    }
+    result := maxY
     return strconv.Itoa(result);
 }
 
-var part2_test_input = []string{
-    ``,
+var part2_test_input = []Target{
+    Target{20,30,-10,-5},
 };
 var part2_test_output = []string{
-    ``,
+    `112`,
 };
-func part2(input string) string {
+func part2(target Target) string {
     // var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
     // var nums, _ = utils.StrToInt_array(inputs);
 
