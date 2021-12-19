@@ -27,7 +27,7 @@ func main() {
             break;
         }
     }
-    input := Target{124, 174, -123, -85}
+    input := Target{124, 174, -123, -86}
     fmt.Printf("Part 1 minitest success: %t! \n", success);
         p1 := part1(input)
         fmt.Printf("Part 1: %s\n\n", p1);
@@ -45,8 +45,8 @@ func main() {
         }
     }
     fmt.Printf("Part 2 minitest success: %t! \n", success);
-    //p2 := part2(input);
-    //fmt.Printf("Part 2: %s\n", p2);
+    p2 := part2(input);
+    fmt.Printf("Part 2: %s\n", p2);
 }
 
 const separator string = "\n";
@@ -64,19 +64,25 @@ type Probe struct {x, y, vx, vy int}
 
 
 func (p *Probe) step() {
+    p.stepX()
+    p.stepY()
+}
 
+func (p *Probe) stepX() {
     p.x += p.vx
-    p.y += p.vy
-
     // Drag
     if p.vx > 0 {
         p.vx--
     } else if p.vx < 0{
         p.vx++
     }
+}
+
+func (p *Probe) stepY() {
+    p.y += p.vy
+
     // Gravity
     p.vy--
-
 }
 
 func (p *Probe) hit(target Target) bool {
@@ -114,15 +120,6 @@ func maxVY(target Target) int {
     return utils.Abs(target.yMin) - 1
 }
 
-func (p *Probe) stepX() {
-    p.x += p.vx
-    if p.vx > 0 {
-        p.vx--
-    } else if p.vx < 0{
-        p.vx++
-    }
-}
-
 func getVx(target Target) int {
     // Lowest vx to use and still hit the target x position (given some y velocity)
     // This gives longest possible time to hit a high y position
@@ -157,7 +154,7 @@ func getVx(target Target) int {
 func findVelocityForHighest(target Target) (int, int) {
     vx := getVx(target)
     vy := maxVY(target)
-    fmt.Printf("vx=%d vy=%d\n", vx, vy)
+    //fmt.Printf("vx=%d vy=%d\n", vx, vy)
     return vx, vy
 }
 
@@ -184,12 +181,68 @@ var part2_test_input = []Target{
 var part2_test_output = []string{
     `112`,
 };
+
+func getVXs(target Target) []int {
+    vxs := make([]int, 0)
+    lowest := getVx(target)
+    for v := lowest; v <= target.xMax; v++ {
+        p := Probe{0,0,v,0}
+        for true {
+            p.stepX()
+            if p.x >= target.xMin && p.x <= target.xMax {
+                vxs = append(vxs, v)
+                break
+            } else if p.x > target.xMax || p.vx == 0 {
+                break
+            }
+        }
+    }
+    return vxs
+}
+
+func getVYs(target Target) []int {
+    // We cheat and only consider the case where the target min y is negative
+    vys := make([]int, 0)
+    minVY := target.yMin
+    maxVY := utils.Abs(target.yMin)
+    for vy := minVY; vy <= maxVY; vy++ {
+        p := Probe{0,0,0,vy}
+        for true {
+            p.stepY()
+            if p.y >= target.yMin && p.y <= target.yMax {
+                vys = append(vys, vy)
+                break
+            } else if p.y < target.yMin && p.vy < 0 {
+                break
+            }
+        }
+    }
+    return vys
+}
+
 func part2(target Target) string {
     // var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
     // var nums, _ = utils.StrToInt_array(inputs);
+    vxs := getVXs(target)
+    //fmt.Printf("vxs: %v\n", vxs)
+    vys := getVYs(target)
+    //fmt.Printf("vys: %v\n", vys)
+    //fmt.Printf("%d\n", len(vxs) * len(vys))
+    hitCount := 0
+    for _, vx := range vxs {
+        for _, vy := range vys {
+            p := Probe{0,0,vx,vy}
+            for true {
+                p.step()
+                if p.hit(target) {
+                    hitCount++
+                    break
+                } else if p.wayOff(target) {
+                    break
+                }
+            }
+        }
+    }
 
-    // ...
-
-    return "";
-    // return strconv.Itoa(result);
+    return strconv.Itoa(hitCount);
 }
