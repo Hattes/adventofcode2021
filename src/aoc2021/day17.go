@@ -4,7 +4,8 @@ import (
     //"aoc/libs/utils"
     "fmt"
     //"strings"
-    //"strconv"
+    "strconv"
+    //"time"
 );
 
 /**
@@ -104,26 +105,57 @@ func (p *Probe) wayOff(target Target) bool {
     return false
 }
 
-func getMaxSteps(target Target) int {
-    // Max steps to use and still hit the target y position (given some x velocity)
-    return 0
+func (p *Probe) stepX() {
+    p.x += p.vx
+    if p.vx > 0 {
+        p.vx--
+    } else if p.vx < 0{
+        p.vx++
+    }
+}
+
+func getVx(target Target) int {
+    // Lowest vx to use and still hit the target x position (given some y velocity)
+    // This gives longest possible time to hit a high y position
+    vx := target.xMax / 3
+    foundV := 0
+    for true {
+        p := Probe{0,0,vx,0}
+        found := false
+        //fmt.Printf("Trying with vx=%d\n", vx)
+        //time.Sleep(1 * time.Second)
+        for true {
+            p.stepX()
+            if p.vx == 0 && p.x < target.xMin {
+                // Last one was good
+                found = true
+                break
+            }
+            if p.x <= target.xMax && p.x >= target.xMin {
+                //println("hit")
+                foundV = vx
+                vx--
+                break
+            }
+        }
+        if found {
+            break
+        }
+    }
+    return foundV
+}
+
+func findVelocityForHighest(target Target) (int, int) {
+    vx := getVx(target)
+    return vx, 1
 }
 
 func part1(target Target) string {
     //var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
     // var nums, _ = utils.StrToInt_array(inputs);
-    p := Probe{0, 0, 6, 3}
-    for true {
-        fmt.Printf("%v\n", p)
-        p.step()
-        if p.hit(target) {
-            break
-        }
-    }
-    // ...
-
-    return "";
-    // return strconv.Itoa(result);
+    vx, vy := findVelocityForHighest(target)
+    result := vx * vy
+    return strconv.Itoa(result);
 }
 
 var part2_test_input = []string{
