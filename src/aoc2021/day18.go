@@ -5,7 +5,6 @@ import (
     "fmt"
     "strings"
     "strconv"
-    "time"
 );
 
 /**
@@ -48,8 +47,8 @@ func main() {
         }
     }
     fmt.Printf("Part 2 minitest success: %t! \n", success);
-    //p2 := part2(input);
-    //fmt.Printf("Part 2: %s\n", p2);
+    p2 := part2(input);
+    fmt.Printf("Part 2: %s\n", p2);
 }
 
 const separator string = "\n";
@@ -227,17 +226,13 @@ func (sn *SnailN) checkForExplosionsHelper(depth int) (bool, int, int) {
     if depth == 3 {
         if !sn.left.isRegular() {
             // This is where the explosion happens
-            //fmt.Printf("left explosion of %v\n", sn.left)
             rShrap := sn.left.right.n
-            //fmt.Printf("just adding %d to right %v\n", rShrap, sn.right)
             sn.right.addToLeft(rShrap)
             lShrap := sn.left.left.n
             sn.left = &(SnailN{0, nil, nil})
             return true, lShrap, 0
         } else if !sn.right.isRegular() {
-            //fmt.Printf("right explosion of %v\n", sn.right)
             lShrap := sn.right.left.n
-            //fmt.Printf("just adding %d to left %v\n", lShrap, sn.left)
             sn.left.addToRight(lShrap)
             rShrap := sn.right.right.n
             sn.right = &(SnailN{0, nil, nil})
@@ -249,7 +244,6 @@ func (sn *SnailN) checkForExplosionsHelper(depth int) (bool, int, int) {
     leftExpl, lShrap, rShrap := sn.left.checkForExplosionsHelper(depth+1)
     if leftExpl {
         if rShrap != 0 {
-            //fmt.Printf("adding %d to right %v\n", rShrap, sn.right)
             sn.right.addToLeft(rShrap)
         }
         return true, lShrap, 0  // left shrapnel must be added at a higher level
@@ -257,7 +251,6 @@ func (sn *SnailN) checkForExplosionsHelper(depth int) (bool, int, int) {
     rightExpl, lShrap, rShrap := sn.right.checkForExplosionsHelper(depth+1)
     if rightExpl {
         if lShrap != 0 {
-            //fmt.Printf("adding %d to left %v\n", lShrap, sn.left)
             sn.left.addToRight(lShrap)
         }
         return true, 0, rShrap
@@ -271,7 +264,6 @@ func halveRoundBothWays(n int) (int,int) {
 
 func (sn *SnailN) split() {
     n1, n2 := halveRoundBothWays(sn.n)
-    //fmt.Printf("splitting %d into %d and %d\n", sn.n, n1, n2)
     sn.n = 0
     sn.left = &(SnailN{n1,nil,nil})
     sn.right = &(SnailN{n2,nil,nil})
@@ -291,18 +283,12 @@ func (sn *SnailN) checkForSplits() bool {
 func (sn *SnailN) reduce() {
     count := 0
     for true {
-        //println("start explosion check")
         exploded := sn.checkForExplosions()
         if exploded {
-            //fmt.Printf("after explosion check step %d: %v\n", count, sn)
             count++
-            //fmt.Printf("Exploded %d times\n", count)
             continue
         }
-        //println("start split check")
         splitted := sn.checkForSplits()
-        //fmt.Printf("after split check:             %v\n", sn)
-        //println("done split check")
         if !splitted {
             break
         }
@@ -316,41 +302,68 @@ func add(sn, other SnailN) SnailN {
 func part1(input string) string {
     var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
     sns := parseSnailNumbers(inputs)
-    //fmt.Printf("%v\n", sns)
-    //testStr := "[[[[5,0],[7,4]],[5,5]],[6,6]]"
     testStr := "[[[[[7,0],[7,7]],[[7,7],[7,8]]],[[[7,7],[8,8]],[[7,7],[8,7]]]],[7,[5,[[3,8],[1,4]]]]]"
     testSn, _ := parseSnailNumber([]rune(testStr))
-    //fmt.Printf("test: %v\n", testSn)
     testSn.reduce()
-    //fmt.Printf("test reduce:                   %v\n", testSn)
-    //panic("derp")
-    //fmt.Printf("test magnitude %d\n", testSn.magnitude())
     sn := sns[0]
-    //fmt.Printf("%v\n", sn)
-    time.Sleep(1)
     for i := 1; i < len(sns); i++ {
         sn = add(sn, sns[i])
-        //fmt.Printf("after add:  %v\n", sn)
         sn.reduce()
-        //fmt.Printf("and reduce: %v\n", sn)
     }
     total := sn.magnitude()
 
     return strconv.Itoa(total);
 }
 
+func getPairs(sns []SnailN) [][]SnailN {
+    pairs := make([][]SnailN, 0)
+    for i := range sns {
+        for j := i+1; j < len(sns); j++ {
+            pairs = append(pairs, []SnailN{sns[i], sns[j]})
+        }
+    }
+    return pairs
+}
+
+func (sn *SnailN) copy() *SnailN {
+    if sn.isRegular() {
+        return &SnailN{sn.n, nil, nil}
+    } else {
+        return &SnailN{0, sn.left.copy(), sn.right.copy()}
+    }
+}
+
 var part2_test_input = []string{
-    ``,
+    `[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]
+[[[5,[2,8]],4],[5,[[9,9],0]]]
+[6,[[[6,2],[5,6]],[[7,6],[4,7]]]]
+[[[6,[0,7]],[0,9]],[4,[9,[9,0]]]]
+[[[7,[6,4]],[3,[1,3]]],[[[5,5],1],9]]
+[[6,[[7,3],[3,2]]],[[[3,8],[5,7]],4]]
+[[[[5,4],[7,7]],8],[[8,3],8]]
+[[9,3],[[9,9],[6,[4,9]]]]
+[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]
+[[[[5,2],5],[8,[3,7]]],[[5,[7,5]],[4,4]]]`,
 };
 var part2_test_output = []string{
-    ``,
+    `3993`,
 };
 func part2(input string) string {
-    // var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
-    // var nums, _ = utils.StrToInt_array(inputs);
+    var inputs = utils.Trim_array(strings.Split(strings.Trim(input, separator), separator));
+    sns := parseSnailNumbers(inputs)
+    pairs := getPairs(sns)
+    maxMagn := 0
 
-    // ...
+    for _, pair := range pairs {
+        for _, is := range [][]int{{0,1},{1,0}} {
+            first := pair[is[0]].copy()
+            second := pair[is[1]].copy()
+            sum := add(*first, *second)
 
-    return "";
-    // return strconv.Itoa(result);
+            sum.reduce()
+            magnitude := sum.magnitude()
+            maxMagn = utils.Max(maxMagn, magnitude)
+        }
+    }
+    return strconv.Itoa(maxMagn);
 }
